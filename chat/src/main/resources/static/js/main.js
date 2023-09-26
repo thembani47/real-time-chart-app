@@ -11,8 +11,14 @@ var stompClient = null;
 var username = null;
 
 var colors = [
-    '#2196F3', '#32c787', '#00BCD4', '#ff5652',
-    '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
+    '#ee82ee',
+    '##6a5acd',
+    '##ffa500',
+    '#ff5652',
+    '#ffc107',
+    '#ff85af',
+    '#FF9800',
+    '#39bbb0'
 ];
 
 function connect(event) {
@@ -32,10 +38,8 @@ function connect(event) {
 
 
 function onConnected() {
-    // Subscribe to the Public Topic
     stompClient.subscribe('/topic/public', onMessageReceived);
 
-    // Tell your username to the server
     stompClient.send("/app/chat.saveUser",
         {},
         JSON.stringify({sender: username, type: 'JOIN'})
@@ -47,7 +51,7 @@ function onConnected() {
 
 function onError(error) {
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';
+    connectingElement.style.color = '#ff0000';
 }
 
 
