@@ -1,121 +1,161 @@
 "use strict";
-var usernamePage = document.querySelector('#username-page');
-var chatPage = document.querySelector('#chat-page');
-var usernameForm = document.querySelector('#usernameForm');
-var messageForm = document.querySelector('#messageForm');
-var messageInput = document.querySelector('#message');
-var messageArea = document.querySelector('#messageArea');
-var connectingElement = document.querySelector('.connecting');
 
-var stompClient = null;
-var username = null;
+// DOM Elements
+const usernamePage = document.querySelector('#username-page');
+const chatPage = document.querySelector('#chat-page');
+const usernameForm = document.querySelector('#usernameForm');
+const messageForm = document.querySelector('#messageForm');
+const messageInput = document.querySelector('#message');
+const messageArea = document.querySelector('#messageArea');
+const connectingElement = document.querySelector('.connecting');
+const leaveButton = document.querySelector('#leaveButton');
 
-var colors = [
-    '#ee82ee',
-    '##6a5acd',
-    '##ffa500',
-    '#ff5652',
-    '#ffc107',
-    '#ff85af',
-    '#FF9800',
-    '#39bbb0'
+let stompClient = null;
+let username = null;
+
+// Avatar Colors
+const colors = [
+    '#ee82ee',  // Violet
+    '#6a5acd',  // SlateBlue
+    '#ffa500',  // Orange
+    '#ff5652',  // Red
+    '#ffc107',  // Yellow
+    '#ff85af',  // Pink
+    '#FF9800',  // Deep Orange
+    '#39bbb0'   // Teal
 ];
 
+// Connect to WebSocket
 function connect(event) {
+    event.preventDefault(); // Prevent default form submission
     username = document.querySelector('#name').value.trim();
 
-    if(username) {
+    if (username) {
         usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
 
-        var socket = new SockJS('/ws');
+        const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, onConnected, onError);
     }
-    event.preventDefault();
 }
 
-
+// WebSocket Connection Established
 function onConnected() {
+    // Subscribe to the public topic
     stompClient.subscribe('/topic/public', onMessageReceived);
 
-    stompClient.send("/app/chat.saveUser",
-        {},
-        JSON.stringify({sender: username, type: 'JOIN'})
-    )
+    // Notify server about new user joining
+    stompClient.send("/app/chat.saveUser", {}, JSON.stringify({ sender: username, type: 'JOIN' }));
 
     connectingElement.classList.add('hidden');
 }
 
-
+// WebSocket Connection Error
 function onError(error) {
-    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
+    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh the page to try again!';
     connectingElement.style.color = '#ff0000';
+    connectingElement.classList.remove('hidden');
 }
 
-
+// Send Message to WebSocket
 function sendMessage(event) {
-    var messageContent = messageInput.value.trim();
-    if(messageContent && stompClient) {
-        var chatMessage = {
+    event.preventDefault(); // Prevent form submission
+    const messageContent = messageInput.value.trim();
+
+    if (messageContent && stompClient) {
+        const chatMessage = {
             sender: username,
-            content: messageInput.value,
-            type: 'CHAT'
+            content: messageContent,
+            type: 'CHAT',
+            timestamp: new Date().toLocaleTimeString()
         };
         stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-        messageInput.value = '';
+        messageInput.value = ''; // Clear input field
     }
-    event.preventDefault();
 }
 
-
+// Handle Incoming Message
 function onMessageReceived(payload) {
-    var message = JSON.parse(payload.body);
+    const message = JSON.parse(payload.body);
 
-    var messageElement = document.createElement('li');
+    const messageElement = document.createElement('li');
+    const textElement = document.createElement('p');
+    const messageText = document.createTextNode(message.content);
+    textElement.appendChild(messageText);
 
-    if(message.type === 'JOIN') {
+    // Display JOIN or LEAVE messages
+    if (message.type === 'JOIN') {
         messageElement.classList.add('event-message');
-        message.content = message.sender + ' joined!';
+        message.content = `${message.sender} joined!`;
     } else if (message.type === 'LEAVE') {
         messageElement.classList.add('event-message');
-        message.content = message.sender + ' left!';
+        message.content = `${message.sender} left!`;
     } else {
         messageElement.classList.add('chat-message');
 
-        var avatarElement = document.createElement('i');
-        var avatarText = document.createTextNode(message.sender[0]);
+        // Create avatar
+        const avatarElement = document.createElement('i');
+        const avatarText = document.createTextNode(message.sender[0]);
         avatarElement.appendChild(avatarText);
-        avatarElement.style['background-color'] = getAvatarColor(message.sender);
-
+        avatarElement.style.backgroundColor = getAvatarColor(message.sender);
         messageElement.appendChild(avatarElement);
 
-        var usernameElement = document.createElement('span');
-        var usernameText = document.createTextNode(message.sender);
+        // Display username
+        const usernameElement = document.createElement('span');
+        const usernameText = document.createTextNode(message.sender);
         usernameElement.appendChild(usernameText);
         messageElement.appendChild(usernameElement);
-    }
 
-    var textElement = document.createElement('p');
-    var messageText = document.createTextNode(message.content);
-    textElement.appendChild(messageText);
+        // Add timestamp
+        const timestampElement = document.createElement('span');
+        timestampElement.classList.add('timestamp');
+        const timestampText = document.createTextNode(` (${message.timestamp || new Date().toLocaleTimeString()})`);
+        timestampElement.appendChild(timestampText);
+        messageElement.appendChild(timestampElement);
+    }
 
     messageElement.appendChild(textElement);
-
     messageArea.appendChild(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;
+    messageArea.scrollTop = messageArea.scrollHeight; // Scroll to the bottom
 }
 
-
+// Get Avatar Color
 function getAvatarColor(messageSender) {
-    var hash = 0;
-    for (var i = 0; i < messageSender.length; i++) {
+    let hash = 0;
+    for (let i = 0; i < messageSender.length; i++) {
         hash = 31 * hash + messageSender.charCodeAt(i);
     }
-    var index = Math.abs(hash % colors.length);
+    const index = Math.abs(hash % colors.length);
     return colors[index];
 }
 
-usernameForm.addEventListener('submit', connect, true)
-messageForm.addEventListener('submit', sendMessage, true)
+// Handle Leave Button Click
+function leaveChat() {
+    if (stompClient) {
+        const chatMessage = {
+            sender: username,
+            type: 'LEAVE'
+        };
+        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+
+        // Disconnect from WebSocket
+        stompClient.disconnect();
+
+        // Reset UI
+        chatPage.classList.add('hidden');
+        usernamePage.classList.remove('hidden');
+
+        // Clear the message area and input
+        messageArea.innerHTML = '';
+        messageInput.value = '';
+        connectingElement.classList.remove('hidden');
+        connectingElement.textContent = 'Connecting...';
+    }
+}
+
+// Event Listeners
+usernameForm.addEventListener('submit', connect);
+messageForm.addEventListener('submit', sendMessage);
+leaveButton.addEventListener('click', leaveChat); // Handle leave button
