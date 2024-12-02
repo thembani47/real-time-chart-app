@@ -2,49 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Socket Chat</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2111/2111363.png" type="image/png">
 </head>
 <body>
-    <div id="username-page">
-        <div class="username-page-container">
-            <h1 class="title">Type your username to enter the Chatroom</h1>
-            <form id="usernameForm" name="usernameForm">
-                <div class="form-group">
-                    <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="accent username-submit">Start Chatting</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="chat-page" class="hidden">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h2>Tief Everything Chat Room!</h2>
+<header id="username-page">
+    <div class="username-page-container">
+        <h1 class="title">Enter Your Username to Join the Chatroom</h1>
+        <form id="usernameForm" name="usernameForm" autocomplete="off">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Username" class="form-control" required />
             </div>
-            <div class="connecting">
-                Connecting...
+            <div class="form-group">
+                <button type="submit" class="accent username-submit">Start Chatting</button>
             </div>
-            <ul id="messageArea">
-
-            </ul>
-            <form id="messageForm" name="messageForm">
-                <div class="form-group">
-                    <div class="input-group clearfix">
-                        <input type="text" id="message" placeholder="Type a message..." autocomplete="off" class="form-control"/>
-                        <button type="submit" class="primary">Send</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+        </form>
     </div>
+</header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    <script src="/js/main.js"></script>
+<main id="chat-page" class="hidden">
+    <div class="chat-container">
+        <header class="chat-header">
+            <h2>Tief Everything Chat Room!</h2>
+            <button id="leaveButton" class="default leave-button">Leave</button>
+        </header>
+
+        <div class="connecting hidden">Connecting...</div>
+        <ul id="messageArea" aria-live="polite"></ul>
+        <form id="messageForm" name="messageForm" autocomplete="off">
+            <div class="form-group">
+                <div class="input-group clearfix">
+                    <input type="text" id="message" placeholder="Type a message..." class="form-control" required />
+                    <button type="submit" class="primary">Send</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<!-- External Libraries for WebSocket and Bootstrap -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
+<!-- Main Script -->
+<script src="/js/main.js"></script>
+
 </body>
 </html>
