@@ -230,6 +230,28 @@ button:hover {
     width: 100%;
 }
 
+/* Style for Leave Button */
+.leave-button {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px 20px;
+    background-color: #ff5652; /* Red button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000; /* Ensure it's on top of other elements */
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Hover Effect for Leave Button */
+.leave-button:hover {
+    background-color: #e94e48; /* Darker red on hover */
+}
+
+
 /* Responsive Design */
 @media screen and (max-width: 730px) {
     .chat-container {
